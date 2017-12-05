@@ -1,0 +1,2 @@
+# bgRestfulInterfaceTestFramework
+国迈科技Restful接口测试框架
