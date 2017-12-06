@@ -60,8 +60,6 @@ class gmInterface:
         except BaseException:
             res = ""
 
-
-
         return res
 
     def query_result_handle_style1(self, result_json, expected_count = -1, expected_data = ""):
