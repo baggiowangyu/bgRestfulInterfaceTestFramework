@@ -3,9 +3,9 @@
 
 import time
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.header import Header
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
 
 # 本模块用于生成测试结果
@@ -37,33 +37,35 @@ class gmReporter:
 
     def login_report_email_server(self, email_host, email_username, email_password):
         self.smtp_object = smtplib.SMTP()
-        self.smtp_object.connect(email_host, 25)
-        self.smtp_object.login(email_username, email_password)
+        code, msg = self.smtp_object.connect(email_host, 25)
+        print "connect smtp server ..." + str(code)
+        print "connect smtp server ..." + msg
+        code, resp = self.smtp_object.login(email_username, email_password)
+        print "login smtp server ..." + str(code)
+        print "login smtp server ..." + resp
 
 
-    def send_report_email(self, sender, recievers, message_text, filepath):
+    def send_report_email(self, sender, recievers, title, message_text, filepath):
 
-        message = MIMEMultipart()
-        message['From'] = Header("自动化测试报告", 'utf-8')
-        message['To'] = Header("测试", 'utf-8')
+        msgRoot = MIMEMultipart('related')
+        msgRoot['Subject'] = title
+        msgRoot['From'] = sender
 
-        # 主题名称
-        subject = "XXX 自动化测试报告"
-        message['Subject'] = Header(subject, 'utf-8')
-
-        # 邮件正文
-        message.attach(MIMEText(message_text, 'plain', 'utf-8'))
+        # 增加正文
+        content = MIMEText(message_text, 'plain')
+        msgRoot.attach(content)
 
         # 构造附件
-        attribute_1 = MIMEText(open(filepath, 'rb').read(), 'base64', 'utf-8')
-        attribute_1["Content-Type"] = 'application/octet-stream'
-        attribute_1["Content-Disposition"] = 'attachment; filename="测试报告.txt"'
-        message.attach(attribute_1)
+        att = MIMEText(open(filepath, 'rb').read(), 'base64', 'utf-8')
+        att["Content-Type"] = 'application/octet-stream'
+        att["Content-Disposition"] = 'attachment; filename="测试报告.txt"'
+        msgRoot.attach(att)
 
-        try:
-            self.smtp_object.sendmail(sender, recievers, message.as_string())
-        except smtplib.SMTPException:
-            print "发送邮件失败！"
+        #try:
+        senderrs = self.smtp_object.sendmail(sender, recievers, msgRoot.as_string())
+        print senderrs
+        #except smtplib.SMTPException:
+        #    print "发送邮件失败！"
 
 
     def init(self, test_name):
@@ -102,9 +104,10 @@ if __name__ == '__main__':
     gmvcs_uom_device = gmReporter()
     #gmvcs_uom_device.init("执法视音频一体化管理平台统一运维管理平台设备管理模块")
 
-    gmvcs_uom_device.login_report_email_server("smtp.sina.com", "lrhw_crashrpt", "871511")
+    gmvcs_uom_device.login_report_email_server("smtp.sina.com", "lrhw_crashrpt@sina.com", "871511")
     gmvcs_uom_device.send_report_email("lrhw_crashrpt@sina.com",
-                                       ["lrhw_crashrpt@sina.com", "wangyu@gosuncn.com"],
+                                       ['wangyu@gosuncn.com', '52864380@qq.com'],
+                                       "测试报告",
                                        "这是来自一个自动化测试工具的测试报告自动发布模块发送的邮件",
-                                       "G:\\OpenSource_Extend\\bgPython\\RestfulTestCase.py")
+                                       "D:\\test.txt")
 
